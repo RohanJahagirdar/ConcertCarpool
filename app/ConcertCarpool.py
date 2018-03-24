@@ -1,11 +1,12 @@
 import json
 
 from flask import Flask, request, jsonify, render_template
-import pymongo
 import requests
 
-app = Flask(__name__)
+from app.Utils.DynamoDB import DynamoDB
 
+app = Flask(__name__)
+dynamoDB = DynamoDB()
 
 @app.route('/')
 def browse():
@@ -21,11 +22,14 @@ def test():
     return 'Hello World Again!'
 
 
-@app.route('/register', methods=['get'])
+@app.route('/register', methods=['post'])
 def register():
-    email = (request.args.get('email'))
-    password = (request.args.get('password'))
-    return jsonify({'summary': email, "password" : password})
+    email = (request.form.get('email'))
+    password = (request.form.get('password'))
+    response = dynamoDB.putUser(email, password)
+
+    #return jsonify({'summary': email, "password" : password})
+    return render_template("/browse.html")
 
 
 @app.route('/search', methods=['get'])
@@ -47,16 +51,6 @@ def book():
     return jsonify({'summary': "Sent notification to driver. In review!!"})
 
 
-@app.route('/db')
-def get_db():
-    from pymongo import MongoClient
-    client = MongoClient('localhost:27017')
-    db = client.get_database("ConcertCapool")
-    con = db.get_collection("Concerts")
-    #ind =
-
-
-    #return jsonify({'summary': ind})
 
 
 if __name__ == '__main__':
